@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Update...</title>
+    <style>
+        /* --- RESET & BASIC SETUP --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* --- UTILITIES --- */
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.5s forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* --- STAGE 0: START BUTTON (To Unlock Audio) --- */
+        #stage-start { z-index: 100; }
+        .start-btn {
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            background: #0f0;
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        /* --- STAGE 1: LOADER --- */
+        #stage-loader { width: 80%; max-width: 400px; }
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border: 1px solid #555;
+            margin-top: 20px;
+            position: relative;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #0f0;
+            width: 0%;
+            transition: width 0.2s;
+        }
+        .loader-text { font-size: 1.2rem; }
+
+        /* --- STAGE 2: 404 ERROR --- */
+        #stage-404 h1 { font-size: 5rem; color: red; }
+        #stage-404 p { font-size: 1.5rem; }
+
+        /* --- STAGE 3 & TEXT REVEALS --- */
+        .typewriter {
+            font-size: 1.5rem;
+            border-right: 2px solid #fff;
+            white-space: pre-wrap;
+            display: inline-block;
+            animation: blink 0.7s infinite;
+        }
+        @keyframes blink { 50% { border-color: transparent; } }
+
+        /* --- STAGE 4 & 6: PRANK IMAGES --- */
+        .prank-img {
+            max-width: 80%;
+            max-height: 60vh;
+            border: 5px solid #fff;
+            margin-bottom: 20px;
+        }
+        .shaking { animation: shake 0.5s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        /* --- STAGE 7: VIDEO PRANK --- */
+        video { max-width: 100%; max-height: 80vh; }
+
+        /* --- STAGE 9: BSOD --- */
+        #stage-bsod {
+            background-color: #0078D7;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 10%;
+            text-align: left;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .sad-face { font-size: 8rem; margin-bottom: 20px; }
+        .stop-code { font-size: 1rem; margin-top: 20px; }
+        .restart-btn {
+            margin-top: 40px;
+            padding: 15px 30px;
+            background: white;
+            color: #0078D7;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .restart-btn:hover { background: #f0f0f0; }
+
+        /* --- STAGE 10: FINAL SURPRISE --- */
+        #stage-final {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #bg-video {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            filter: brightness(0.4);
+        }
+        .glass-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1000px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .final-title {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        .grid-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            transform: rotate(-2deg);
+            transition: transform 0.3s;
+        }
+        .card:nth-child(even) { transform: rotate(2deg); }
+        .card:hover { transform: scale(1.05) rotate(0); z-index: 10; }
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="sound-type" src="resources/typewriter.mp3" loop preload="auto"></audio>
+    <audio id="sound-hellna" src="resources/sound-hellna.mp3" preload="auto"></audio>
+    <audio id="birthday" src="resources/birthday.mp3" preload="auto"></audio>
+    <audio id="mario" src="resources/mario.mp3" loop preload="auto"></audio>
+
+    <div id="stage-start">
+        <button class="start-btn" onclick="initPrank()">START SYSTEM UPDATE</button>
+        <p style="margin-top: 15px; color: #555;">Required for hardware synchronization</p>
+    </div>
+
+    <div id="stage-loader" class="hidden">
+        <div class="loader-text">Loading System Resources...</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+        <div id="loading-status" style="margin-top: 10px; font-size: 0.8rem; color: #aaa;">Initializing...</div>
+    </div>
+
+    <div id="stage-404" class="hidden">
+        <h1>404</h1>
+        <p>Resource Not Found.</p>
+        <p style="font-size: 0.8rem; color: #666;">CRITICAL_PROCESS_DIED</p>
+    </div>
+
+    <div id="stage-text" class="hidden">
+        <span id="typing-area" class="typewriter"></span>
+    </div>
+
+    <div id="stage-monkey" class="hidden">
+        <img src="resources/monkey1.jpg" class="prank-img" alt="Monkey">
+        <h1>HAPPY BIRTHDAY Name here !</h1>
+    </div>
+
+    <div id="stage-panic" class="hidden shaking">
+        <h1 style="color: red;">F*** F*** WAIT!</h1>
+        <p>This isn't the one!</p>
+    </div>
+
+    <div id="stage-sloth" class="hidden">
+        <h1>OK, CORRECTING...</h1>
+        <img src="resources/jack.jpg" class="prank-img" alt="Sloth">
+        <h2>Happy Birthday Name here< (Again)</h2>
+    </div>
+
+    <div id="stage-video" class="hidden">
+        <video id="prank-vid" src="resources/kill.mp4" controls></video>
+    </div>
+
+    <div id="stage-oops" class="hidden">
+        <h1 style="font-family: 'Courier New'; color: red;">OOPS AGAIN WTH MAN</h1>
+        <p>Fixing things up...</p>
+    </div>
+
+    <div id="stage-bsod" class="hidden">
+        <div class="sad-face">:(</div>
+        <h1>Your PC ran into a problem and needs to restart.</h1>
+        <p>We're just collecting some error info, and then you can restart.</p>
+        <div class="stop-code">
+            <p>100% complete</p>
+            <p>Stop Code: BIRTHDAY_OVERLOAD_EXCEPTION</p>
+        </div>
+        <button class="restart-btn" onclick="triggerFinal()">RESTART SYSTEM</button>
+    </div>
+
+    <div id="stage-final" class="hidden">
+        <video autoplay muted loop id="bg-video">
+            <source src="resources/finalbirthday.mp4" type="video/mp4">
+        </video>
+        <div class="glass-container fade-in">
+            <h1 class="final-title">Happy Birthday <<Name>>!</h1>
+            <div class="grid-gallery">
+                <div class="card"><img src="" alt="Memory 1"></div>
+                <div class="card"><img src="" alt="Memory 2"></div>
+                <div class="card"><img src="" alt="Memory 3"></div>
+                <div class="card"><img src="" alt="Memory 4"></div>
+            </div>
+            <p style="margin-top: 20px; font-size: 1.2rem;">Hope you have a Greatest times ahead 🥳!</p>
+        </div>
+    </div>
+
+    <script>
+        function showStage(id) {
+            document.querySelectorAll('body > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function playSound(id) {
+            const s = document.getElementById(id);
+            if (!s) return;
+            
+            // Mario at half volume, others full
+            s.volume = (id === 'mario') ? 0.5 : 1.0;
+            
+            s.currentTime = 0;
+            s.play().catch(e => console.error("Play failed for " + id, e));
+        }
+
+        // --- STEP 1: INITIALIZE PRANK ON CLICK ---
+        function initPrank() {
+            showStage('stage-loader');
+            
+            const bar = document.getElementById('progress');
+            const status = document.getElementById('loading-status');
+            let width = 0;
+            
+            let interval = setInterval(() => {
+                if (width >= 60) {
+                    clearInterval(interval);
+                    status.innerText = "Hanging...";
+                    setTimeout(() => {
+                        status.innerText = "Retrying connection...";
+                        let slowInterval = setInterval(() => {
+                            if (width >= 95) {
+                                clearInterval(slowInterval);
+                                status.innerText = "Wait moree...";
+                                setTimeout(() => {
+                                    showStage('stage-404');
+                                    setTimeout(runScript, 3000); 
+                                }, 3000);
+                            } else {
+                                width++;
+                                bar.style.width = width + '%';
+                            }
+                        }, 150); 
+                    }, 1500);
+                } else {
+                    width++;
+                    bar.style.width = width + '%';
+                }
+            }, 30);
+        }
+
+        // --- STEP 2: SCRIPT RUNNER ---
+        function runScript() {
+            // Start Background Mario Music (0.5 vol)
+            playSound('mario');
+            
+            showStage('stage-text');
+            const textEl = document.getElementById('typing-area');
+            const msg1 = "So are you ready kid for a big adventure into the ... I forgot the script for god's sake...";
+            
+            typeWriter(msg1, textEl, () => {
+                setTimeout(() => {
+                    textEl.innerHTML = ""; 
+                    typeWriter("Ok here we go...", textEl, () => {
+                        setTimeout(() => {
+                            showStage('stage-monkey');
+                            setTimeout(() => {
+                                // HELL NAH MOMENT
+                                showStage('stage-panic');
+                                playSound('sound-hellna');
+
+                                setTimeout(() => {
+                                    showStage('stage-sloth');
+                                    setTimeout(() => {
+                                        showStage('stage-video');
+                                        let v = document.getElementById('prank-vid');
+                                        v.play().catch(e => console.log("Video blocked"));
+                                        
+                                        setTimeout(() => {
+                                            v.pause();
+                                            showStage('stage-oops');
+                                            setTimeout(() => {
+                                                // --- STOP MARIO BEFORE BSOD ---
+                                                const m = document.getElementById('mario');
+                                                m.pause();
+                                                m.currentTime = 0;
+                                                
+                                                showStage('stage-bsod');
+                                            }, 3000);
+                                        }, 10000);
+                                    }, 4000);
+                                }, 2500);
+                            }, 3000);
+                        }, 1500);
+                    });
+                }, 2000);
+            });
+        }
+
+        function typeWriter(text, element, callback) {
+            let i = 0;
+            element.innerHTML = "";
+            const typeSound = document.getElementById('sound-type');
+            typeSound.currentTime = 0;
+            typeSound.play().catch(e => {});
+
+            let timer = setInterval(() => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(timer);
+                    typeSound.pause();
+                    if(callback) callback();
+                }
+            }, 50); 
+        }
+
+        function triggerFinal() {
+            showStage('stage-final');
+            const v = document.getElementById('bg-video');
+            v.muted = false; // Ensure final video sound plays
+            v.play();
+        }
+    </script>
+</body>
+</html>
